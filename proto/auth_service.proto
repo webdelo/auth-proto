@@ -1,0 +1,244 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/webdelo/auth-proto/go/auth_v1";
+
+service AuthService {
+  // Login по email + password. Возвращает access + refresh token.
+  // Errors: UNAUTHENTICATED (неверные credentials или заблокирован),
+  //         RESOURCE_EXHAUSTED (rate limit / lockout).
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // Инвалидация конкретного refresh token (текущая сессия).
+  // Errors: UNAUTHENTICATED (невалидный или expired token).
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+  // Инвалидация ВСЕХ refresh tokens пользователя + инкремент token_version.
+  // Errors: UNAUTHENTICATED (невалидный access token).
+  rpc LogoutAll(LogoutAllRequest) returns (LogoutAllResponse);
+
+  // Ротация refresh token. Старый инвалидируется, выдаётся новый.
+  // Errors: UNAUTHENTICATED (невалидный, expired или reused token).
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+
+  // Валидация access token. Hot path — вызывается BFF на каждый запрос.
+  // Никогда не возвращает gRPC ошибку — всегда возвращает ValidateTokenResponse
+  // с is_valid=true/false. gRPC ошибка означает недоступность auth service.
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+
+  // Смена пароля текущего пользователя. Инвалидирует все сессии.
+  // Errors: UNAUTHENTICATED (невалидный access token),
+  //         INVALID_ARGUMENT (неверный текущий пароль или слабый новый).
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+
+  // === Пользователи (фаза b) ===
+
+  // Профиль текущего пользователя (по access token).
+  // Errors: UNAUTHENTICATED
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+
+  // Список всех пользователей. Admin only.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+
+  // Создание нового пользователя. Admin only.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         ALREADY_EXISTS (email), INVALID_ARGUMENT
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+
+  // Изменение роли пользователя. Admin only.
+  // Нельзя менять свою роль. Нельзя понизить последнего admin.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         NOT_FOUND, FAILED_PRECONDITION (last admin / self)
+  rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse);
+
+  // Блокировка/разблокировка пользователя. Admin only.
+  // Block: инвалидирует все сессии + инкремент token_version.
+  // Нельзя заблокировать себя. Нельзя заблокировать последнего admin.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         NOT_FOUND, FAILED_PRECONDITION (last admin / self)
+  rpc BlockUser(BlockUserRequest) returns (BlockUserResponse);
+
+  // === Сессии (фаза b) ===
+
+  // Список активных сессий текущего пользователя.
+  // Errors: UNAUTHENTICATED
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+
+  // Отзыв конкретной сессии текущего пользователя.
+  // Errors: UNAUTHENTICATED, NOT_FOUND (не принадлежит текущему пользователю)
+  rpc RevokeSession(RevokeSessionRequest) returns (RevokeSessionResponse);
+}
+
+// --- Login ---
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+  string ip = 3;
+  string user_agent = 4;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 access_token_expires_at = 3;   // Unix timestamp, seconds (UTC).
+  int64 refresh_token_expires_at = 4;  // Unix timestamp, seconds (UTC).
+  User user = 5;
+}
+
+// --- Logout ---
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}
+
+// --- LogoutAll ---
+
+message LogoutAllRequest {
+  string access_token = 1;
+}
+
+message LogoutAllResponse {
+  int32 sessions_invalidated = 1;
+}
+
+// --- RefreshToken ---
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+  string ip = 2;
+  string user_agent = 3;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 access_token_expires_at = 3;   // Unix timestamp, seconds (UTC).
+  int64 refresh_token_expires_at = 4;  // Unix timestamp, seconds (UTC).
+}
+
+// --- ValidateToken ---
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool is_valid = 1;
+  string user_uuid = 2;
+  string role = 3;
+  string error_reason = 4;
+}
+
+// --- ChangePassword ---
+
+message ChangePasswordRequest {
+  string access_token = 1;
+  string current_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {}
+
+// --- Shared ---
+
+message User {
+  string uuid = 1;
+  string email = 2;
+  string role = 3;
+  bool is_blocked = 4;
+  int64 created_at = 5;      // Unix timestamp, seconds (UTC).
+  int64 last_login_at = 6;   // Unix timestamp, seconds (UTC). 0 = never logged in.
+}
+
+// --- Shared: Session ---
+
+message Session {
+  string id = 1;
+  string ip = 2;
+  string user_agent = 3;
+  int64 created_at = 4;        // Unix timestamp, seconds (UTC).
+  int64 last_active_at = 5;    // Unix timestamp, seconds (UTC).
+  int64 expires_at = 6;        // Unix timestamp, seconds (UTC).
+  bool is_current = 7;
+}
+
+// --- GetCurrentUser ---
+
+message GetCurrentUserRequest {
+  string access_token = 1;
+}
+
+message GetCurrentUserResponse {
+  User user = 1;
+}
+
+// --- ListUsers ---
+
+message ListUsersRequest {
+  string access_token = 1;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+}
+
+// --- CreateUser ---
+
+message CreateUserRequest {
+  string access_token = 1;
+  string email = 2;
+  string password = 3;
+  string role = 4;
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+// --- UpdateUserRole ---
+
+message UpdateUserRoleRequest {
+  string access_token = 1;
+  string user_uuid = 2;
+  string new_role = 3;
+}
+
+message UpdateUserRoleResponse {
+  User user = 1;
+}
+
+// --- BlockUser ---
+
+message BlockUserRequest {
+  string access_token = 1;
+  string user_uuid = 2;
+  bool block = 3;
+}
+
+message BlockUserResponse {
+  User user = 1;
+}
+
+// --- ListSessions ---
+
+message ListSessionsRequest {
+  string access_token = 1;
+}
+
+message ListSessionsResponse {
+  repeated Session sessions = 1;
+}
+
+// --- RevokeSession ---
+
+message RevokeSessionRequest {
+  string access_token = 1;
+  string session_id = 2;
+}
+
+message RevokeSessionResponse {}

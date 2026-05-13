@@ -1,0 +1,15 @@
+# Go
+*.exe
+*.test
+*.out
+bin/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local
+.env
+.temp/
