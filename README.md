@@ -78,22 +78,23 @@ go/v1.0.0   # first stable release (when the contract is frozen)
 | Repo | Role |
 |------|------|
 | [`webdelo/auth`](https://github.com/webdelo/auth) | Server. Imports stubs as `github.com/webdelo/auth-proto/go/auth_v1`. |
-| `webdelo/auth-client-go` (planned) | Go SDK — thin wrapper over `auth_v1.AuthServiceClient`. |
+| [`webdelo/auth-client-go`](https://github.com/webdelo/auth-client-go) | Go SDK — thin wrapper over `auth_v1.AuthServiceClient`. |
 | `webdelo/auth-client-php` (future) | PHP SDK — generated from `proto/`. |
 | `webdelo/auth-client-ts` (future) | TypeScript SDK — generated from `proto/`. |
 
-## Access
+## Installation
 
-This repository is **private**. To consume it as a Go module:
+This repository is public — no authentication required. Add as a Go module dependency:
 
 ```bash
-# Required for go list / go mod tidy / go build
-export GOPRIVATE=github.com/webdelo/*
+go get github.com/webdelo/auth-proto/go@latest
 ```
 
-Provide either:
+Or pin a specific tag:
 
-- A configured SSH key (`~/.ssh/id_*`) with read access to `webdelo/auth-proto`, or
-- A GitHub personal access token (PAT) with `repo` scope, used via HTTPS credential helper.
+```go
+// go.mod
+require github.com/webdelo/auth-proto/go v0.1.0
+```
 
-In CI, set `GOPRIVATE=github.com/webdelo/*` and supply a PAT (the AUTH CI uses the `GH_PAT` secret — see `.github/workflows/ci.yaml`).
+Tags follow the [Go submodule convention](https://go.dev/ref/mod#vcs-version): `go/v0.1.0`, `go/v0.2.0`, etc. — see [Versioning](#versioning).
