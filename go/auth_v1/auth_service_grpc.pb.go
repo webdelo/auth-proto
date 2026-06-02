@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName          = "/auth.v1.AuthService/Login"
-	AuthService_Logout_FullMethodName         = "/auth.v1.AuthService/Logout"
-	AuthService_LogoutAll_FullMethodName      = "/auth.v1.AuthService/LogoutAll"
-	AuthService_RefreshToken_FullMethodName   = "/auth.v1.AuthService/RefreshToken"
-	AuthService_ValidateToken_FullMethodName  = "/auth.v1.AuthService/ValidateToken"
-	AuthService_ChangePassword_FullMethodName = "/auth.v1.AuthService/ChangePassword"
-	AuthService_GetCurrentUser_FullMethodName = "/auth.v1.AuthService/GetCurrentUser"
-	AuthService_ListUsers_FullMethodName      = "/auth.v1.AuthService/ListUsers"
-	AuthService_CreateUser_FullMethodName     = "/auth.v1.AuthService/CreateUser"
-	AuthService_UpdateUserRole_FullMethodName = "/auth.v1.AuthService/UpdateUserRole"
-	AuthService_BlockUser_FullMethodName      = "/auth.v1.AuthService/BlockUser"
-	AuthService_ListSessions_FullMethodName   = "/auth.v1.AuthService/ListSessions"
-	AuthService_RevokeSession_FullMethodName  = "/auth.v1.AuthService/RevokeSession"
+	AuthService_Login_FullMethodName           = "/auth.v1.AuthService/Login"
+	AuthService_Logout_FullMethodName          = "/auth.v1.AuthService/Logout"
+	AuthService_LogoutAll_FullMethodName       = "/auth.v1.AuthService/LogoutAll"
+	AuthService_RefreshToken_FullMethodName    = "/auth.v1.AuthService/RefreshToken"
+	AuthService_ValidateToken_FullMethodName   = "/auth.v1.AuthService/ValidateToken"
+	AuthService_ChangePassword_FullMethodName  = "/auth.v1.AuthService/ChangePassword"
+	AuthService_GetCurrentUser_FullMethodName  = "/auth.v1.AuthService/GetCurrentUser"
+	AuthService_ListUsers_FullMethodName       = "/auth.v1.AuthService/ListUsers"
+	AuthService_CreateUser_FullMethodName      = "/auth.v1.AuthService/CreateUser"
+	AuthService_UpdateUserRole_FullMethodName  = "/auth.v1.AuthService/UpdateUserRole"
+	AuthService_BlockUser_FullMethodName       = "/auth.v1.AuthService/BlockUser"
+	AuthService_SetUserPassword_FullMethodName = "/auth.v1.AuthService/SetUserPassword"
+	AuthService_ListSessions_FullMethodName    = "/auth.v1.AuthService/ListSessions"
+	AuthService_RevokeSession_FullMethodName   = "/auth.v1.AuthService/RevokeSession"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -85,6 +86,14 @@ type AuthServiceClient interface {
 	//
 	//	NOT_FOUND, FAILED_PRECONDITION (last admin / self)
 	BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*BlockUserResponse, error)
+	// Сброс пароля пользователя администратором. Admin only.
+	// Не требует текущего пароля — предназначен для пользователей, забывших пароль.
+	// Инвалидирует все сессии целевого пользователя + инкремент token_version.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (пользователь не найден),
+	//	INVALID_ARGUMENT (невалидный uuid или слабый пароль).
+	SetUserPassword(ctx context.Context, in *SetUserPasswordRequest, opts ...grpc.CallOption) (*SetUserPasswordResponse, error)
 	// Список активных сессий текущего пользователя.
 	// Errors: UNAUTHENTICATED
 	ListSessions(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error)
@@ -211,6 +220,16 @@ func (c *authServiceClient) BlockUser(ctx context.Context, in *BlockUserRequest,
 	return out, nil
 }
 
+func (c *authServiceClient) SetUserPassword(ctx context.Context, in *SetUserPasswordRequest, opts ...grpc.CallOption) (*SetUserPasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetUserPasswordResponse)
+	err := c.cc.Invoke(ctx, AuthService_SetUserPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) ListSessions(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListSessionsResponse)
@@ -282,6 +301,14 @@ type AuthServiceServer interface {
 	//
 	//	NOT_FOUND, FAILED_PRECONDITION (last admin / self)
 	BlockUser(context.Context, *BlockUserRequest) (*BlockUserResponse, error)
+	// Сброс пароля пользователя администратором. Admin only.
+	// Не требует текущего пароля — предназначен для пользователей, забывших пароль.
+	// Инвалидирует все сессии целевого пользователя + инкремент token_version.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (пользователь не найден),
+	//	INVALID_ARGUMENT (невалидный uuid или слабый пароль).
+	SetUserPassword(context.Context, *SetUserPasswordRequest) (*SetUserPasswordResponse, error)
 	// Список активных сессий текущего пользователя.
 	// Errors: UNAUTHENTICATED
 	ListSessions(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error)
@@ -330,6 +357,9 @@ func (UnimplementedAuthServiceServer) UpdateUserRole(context.Context, *UpdateUse
 }
 func (UnimplementedAuthServiceServer) BlockUser(context.Context, *BlockUserRequest) (*BlockUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method BlockUser not implemented")
+}
+func (UnimplementedAuthServiceServer) SetUserPassword(context.Context, *SetUserPasswordRequest) (*SetUserPasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetUserPassword not implemented")
 }
 func (UnimplementedAuthServiceServer) ListSessions(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListSessions not implemented")
@@ -556,6 +586,24 @@ func _AuthService_BlockUser_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SetUserPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetUserPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SetUserPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SetUserPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SetUserPassword(ctx, req.(*SetUserPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_ListSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListSessionsRequest)
 	if err := dec(in); err != nil {
@@ -642,6 +690,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BlockUser",
 			Handler:    _AuthService_BlockUser_Handler,
+		},
+		{
+			MethodName: "SetUserPassword",
+			Handler:    _AuthService_SetUserPassword_Handler,
 		},
 		{
 			MethodName: "ListSessions",

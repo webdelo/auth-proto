@@ -60,6 +60,14 @@ service AuthService {
   //         NOT_FOUND, FAILED_PRECONDITION (last admin / self)
   rpc BlockUser(BlockUserRequest) returns (BlockUserResponse);
 
+  // Сброс пароля пользователя администратором. Admin only.
+  // Не требует текущего пароля — предназначен для пользователей, забывших пароль.
+  // Инвалидирует все сессии целевого пользователя + инкремент token_version.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         NOT_FOUND (пользователь не найден),
+  //         INVALID_ARGUMENT (невалидный uuid или слабый пароль).
+  rpc SetUserPassword(SetUserPasswordRequest) returns (SetUserPasswordResponse);
+
   // === Сессии (фаза b) ===
 
   // Список активных сессий текущего пользователя.
@@ -223,6 +231,16 @@ message BlockUserRequest {
 message BlockUserResponse {
   User user = 1;
 }
+
+// --- SetUserPassword ---
+
+message SetUserPasswordRequest {
+  string access_token = 1;
+  string user_uuid = 2;
+  string new_password = 3;
+}
+
+message SetUserPasswordResponse {}
 
 // --- ListSessions ---
 
