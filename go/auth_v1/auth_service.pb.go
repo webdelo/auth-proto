@@ -1725,6 +1725,162 @@ func (x *AdminRevokeSessionRequest) GetSessionId() string {
 	return ""
 }
 
+type AdminListAllSessionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"` // токен админа-инициатора
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminListAllSessionsRequest) Reset() {
+	*x = AdminListAllSessionsRequest{}
+	mi := &file_auth_service_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminListAllSessionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminListAllSessionsRequest) ProtoMessage() {}
+
+func (x *AdminListAllSessionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_service_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminListAllSessionsRequest.ProtoReflect.Descriptor instead.
+func (*AdminListAllSessionsRequest) Descriptor() ([]byte, []int) {
+	return file_auth_service_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *AdminListAllSessionsRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type SessionWithUser struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Session       *Session               `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty"`                   // переиспользуем существующее сообщение Session (НЕ менять)
+	UserUuid      string                 `protobuf:"bytes,2,opt,name=user_uuid,json=userUuid,proto3" json:"user_uuid,omitempty"` // привязка: кому принадлежит сессия
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SessionWithUser) Reset() {
+	*x = SessionWithUser{}
+	mi := &file_auth_service_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SessionWithUser) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SessionWithUser) ProtoMessage() {}
+
+func (x *SessionWithUser) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_service_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SessionWithUser.ProtoReflect.Descriptor instead.
+func (*SessionWithUser) Descriptor() ([]byte, []int) {
+	return file_auth_service_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *SessionWithUser) GetSession() *Session {
+	if x != nil {
+		return x.Session
+	}
+	return nil
+}
+
+func (x *SessionWithUser) GetUserUuid() string {
+	if x != nil {
+		return x.UserUuid
+	}
+	return ""
+}
+
+func (x *SessionWithUser) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *SessionWithUser) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type AdminListAllSessionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sessions      []*SessionWithUser     `protobuf:"bytes,1,rep,name=sessions,proto3" json:"sessions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminListAllSessionsResponse) Reset() {
+	*x = AdminListAllSessionsResponse{}
+	mi := &file_auth_service_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminListAllSessionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminListAllSessionsResponse) ProtoMessage() {}
+
+func (x *AdminListAllSessionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_service_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminListAllSessionsResponse.ProtoReflect.Descriptor instead.
+func (*AdminListAllSessionsResponse) Descriptor() ([]byte, []int) {
+	return file_auth_service_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *AdminListAllSessionsResponse) GetSessions() []*SessionWithUser {
+	if x != nil {
+		return x.Sessions
+	}
+	return nil
+}
+
 var File_auth_service_proto protoreflect.FileDescriptor
 
 const file_auth_service_proto_rawDesc = "" +
@@ -1840,7 +1996,17 @@ const file_auth_service_proto_rawDesc = "" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1b\n" +
 	"\tuser_uuid\x18\x02 \x01(\tR\buserUuid\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x03 \x01(\tR\tsessionId2\xcd\t\n" +
+	"session_id\x18\x03 \x01(\tR\tsessionId\"@\n" +
+	"\x1bAdminListAllSessionsRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"\x84\x01\n" +
+	"\x0fSessionWithUser\x12*\n" +
+	"\asession\x18\x01 \x01(\v2\x10.auth.v1.SessionR\asession\x12\x1b\n" +
+	"\tuser_uuid\x18\x02 \x01(\tR\buserUuid\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\"T\n" +
+	"\x1cAdminListAllSessionsResponse\x124\n" +
+	"\bsessions\x18\x01 \x03(\v2\x18.auth.v1.SessionWithUserR\bsessions2\xb2\n" +
+	"\n" +
 	"\vAuthService\x126\n" +
 	"\x05Login\x12\x15.auth.v1.LoginRequest\x1a\x16.auth.v1.LoginResponse\x129\n" +
 	"\x06Logout\x12\x16.auth.v1.LogoutRequest\x1a\x17.auth.v1.LogoutResponse\x12B\n" +
@@ -1858,7 +2024,8 @@ const file_auth_service_proto_rawDesc = "" +
 	"\fListSessions\x12\x1c.auth.v1.ListSessionsRequest\x1a\x1d.auth.v1.ListSessionsResponse\x12N\n" +
 	"\rRevokeSession\x12\x1d.auth.v1.RevokeSessionRequest\x1a\x1e.auth.v1.RevokeSessionResponse\x12U\n" +
 	"\x11AdminListSessions\x12!.auth.v1.AdminListSessionsRequest\x1a\x1d.auth.v1.ListSessionsResponse\x12X\n" +
-	"\x12AdminRevokeSession\x12\".auth.v1.AdminRevokeSessionRequest\x1a\x1e.auth.v1.RevokeSessionResponseB*Z(github.com/webdelo/auth-proto/go/auth_v1b\x06proto3"
+	"\x12AdminRevokeSession\x12\".auth.v1.AdminRevokeSessionRequest\x1a\x1e.auth.v1.RevokeSessionResponse\x12c\n" +
+	"\x14AdminListAllSessions\x12$.auth.v1.AdminListAllSessionsRequest\x1a%.auth.v1.AdminListAllSessionsResponseB*Z(github.com/webdelo/auth-proto/go/auth_v1b\x06proto3"
 
 var (
 	file_auth_service_proto_rawDescOnce sync.Once
@@ -1872,40 +2039,43 @@ func file_auth_service_proto_rawDescGZIP() []byte {
 	return file_auth_service_proto_rawDescData
 }
 
-var file_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_auth_service_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_auth_service_proto_goTypes = []any{
-	(*LoginRequest)(nil),              // 0: auth.v1.LoginRequest
-	(*LoginResponse)(nil),             // 1: auth.v1.LoginResponse
-	(*LogoutRequest)(nil),             // 2: auth.v1.LogoutRequest
-	(*LogoutResponse)(nil),            // 3: auth.v1.LogoutResponse
-	(*LogoutAllRequest)(nil),          // 4: auth.v1.LogoutAllRequest
-	(*LogoutAllResponse)(nil),         // 5: auth.v1.LogoutAllResponse
-	(*RefreshTokenRequest)(nil),       // 6: auth.v1.RefreshTokenRequest
-	(*RefreshTokenResponse)(nil),      // 7: auth.v1.RefreshTokenResponse
-	(*ValidateTokenRequest)(nil),      // 8: auth.v1.ValidateTokenRequest
-	(*ValidateTokenResponse)(nil),     // 9: auth.v1.ValidateTokenResponse
-	(*ChangePasswordRequest)(nil),     // 10: auth.v1.ChangePasswordRequest
-	(*ChangePasswordResponse)(nil),    // 11: auth.v1.ChangePasswordResponse
-	(*User)(nil),                      // 12: auth.v1.User
-	(*Session)(nil),                   // 13: auth.v1.Session
-	(*GetCurrentUserRequest)(nil),     // 14: auth.v1.GetCurrentUserRequest
-	(*GetCurrentUserResponse)(nil),    // 15: auth.v1.GetCurrentUserResponse
-	(*ListUsersRequest)(nil),          // 16: auth.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),         // 17: auth.v1.ListUsersResponse
-	(*CreateUserRequest)(nil),         // 18: auth.v1.CreateUserRequest
-	(*CreateUserResponse)(nil),        // 19: auth.v1.CreateUserResponse
-	(*UpdateUserRoleRequest)(nil),     // 20: auth.v1.UpdateUserRoleRequest
-	(*UpdateUserRoleResponse)(nil),    // 21: auth.v1.UpdateUserRoleResponse
-	(*BlockUserRequest)(nil),          // 22: auth.v1.BlockUserRequest
-	(*BlockUserResponse)(nil),         // 23: auth.v1.BlockUserResponse
-	(*SetUserPasswordRequest)(nil),    // 24: auth.v1.SetUserPasswordRequest
-	(*SetUserPasswordResponse)(nil),   // 25: auth.v1.SetUserPasswordResponse
-	(*ListSessionsRequest)(nil),       // 26: auth.v1.ListSessionsRequest
-	(*ListSessionsResponse)(nil),      // 27: auth.v1.ListSessionsResponse
-	(*RevokeSessionRequest)(nil),      // 28: auth.v1.RevokeSessionRequest
-	(*RevokeSessionResponse)(nil),     // 29: auth.v1.RevokeSessionResponse
-	(*AdminListSessionsRequest)(nil),  // 30: auth.v1.AdminListSessionsRequest
-	(*AdminRevokeSessionRequest)(nil), // 31: auth.v1.AdminRevokeSessionRequest
+	(*LoginRequest)(nil),                 // 0: auth.v1.LoginRequest
+	(*LoginResponse)(nil),                // 1: auth.v1.LoginResponse
+	(*LogoutRequest)(nil),                // 2: auth.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 3: auth.v1.LogoutResponse
+	(*LogoutAllRequest)(nil),             // 4: auth.v1.LogoutAllRequest
+	(*LogoutAllResponse)(nil),            // 5: auth.v1.LogoutAllResponse
+	(*RefreshTokenRequest)(nil),          // 6: auth.v1.RefreshTokenRequest
+	(*RefreshTokenResponse)(nil),         // 7: auth.v1.RefreshTokenResponse
+	(*ValidateTokenRequest)(nil),         // 8: auth.v1.ValidateTokenRequest
+	(*ValidateTokenResponse)(nil),        // 9: auth.v1.ValidateTokenResponse
+	(*ChangePasswordRequest)(nil),        // 10: auth.v1.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),       // 11: auth.v1.ChangePasswordResponse
+	(*User)(nil),                         // 12: auth.v1.User
+	(*Session)(nil),                      // 13: auth.v1.Session
+	(*GetCurrentUserRequest)(nil),        // 14: auth.v1.GetCurrentUserRequest
+	(*GetCurrentUserResponse)(nil),       // 15: auth.v1.GetCurrentUserResponse
+	(*ListUsersRequest)(nil),             // 16: auth.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),            // 17: auth.v1.ListUsersResponse
+	(*CreateUserRequest)(nil),            // 18: auth.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),           // 19: auth.v1.CreateUserResponse
+	(*UpdateUserRoleRequest)(nil),        // 20: auth.v1.UpdateUserRoleRequest
+	(*UpdateUserRoleResponse)(nil),       // 21: auth.v1.UpdateUserRoleResponse
+	(*BlockUserRequest)(nil),             // 22: auth.v1.BlockUserRequest
+	(*BlockUserResponse)(nil),            // 23: auth.v1.BlockUserResponse
+	(*SetUserPasswordRequest)(nil),       // 24: auth.v1.SetUserPasswordRequest
+	(*SetUserPasswordResponse)(nil),      // 25: auth.v1.SetUserPasswordResponse
+	(*ListSessionsRequest)(nil),          // 26: auth.v1.ListSessionsRequest
+	(*ListSessionsResponse)(nil),         // 27: auth.v1.ListSessionsResponse
+	(*RevokeSessionRequest)(nil),         // 28: auth.v1.RevokeSessionRequest
+	(*RevokeSessionResponse)(nil),        // 29: auth.v1.RevokeSessionResponse
+	(*AdminListSessionsRequest)(nil),     // 30: auth.v1.AdminListSessionsRequest
+	(*AdminRevokeSessionRequest)(nil),    // 31: auth.v1.AdminRevokeSessionRequest
+	(*AdminListAllSessionsRequest)(nil),  // 32: auth.v1.AdminListAllSessionsRequest
+	(*SessionWithUser)(nil),              // 33: auth.v1.SessionWithUser
+	(*AdminListAllSessionsResponse)(nil), // 34: auth.v1.AdminListAllSessionsResponse
 }
 var file_auth_service_proto_depIdxs = []int32{
 	12, // 0: auth.v1.LoginResponse.user:type_name -> auth.v1.User
@@ -1915,43 +2085,47 @@ var file_auth_service_proto_depIdxs = []int32{
 	12, // 4: auth.v1.UpdateUserRoleResponse.user:type_name -> auth.v1.User
 	12, // 5: auth.v1.BlockUserResponse.user:type_name -> auth.v1.User
 	13, // 6: auth.v1.ListSessionsResponse.sessions:type_name -> auth.v1.Session
-	0,  // 7: auth.v1.AuthService.Login:input_type -> auth.v1.LoginRequest
-	2,  // 8: auth.v1.AuthService.Logout:input_type -> auth.v1.LogoutRequest
-	4,  // 9: auth.v1.AuthService.LogoutAll:input_type -> auth.v1.LogoutAllRequest
-	6,  // 10: auth.v1.AuthService.RefreshToken:input_type -> auth.v1.RefreshTokenRequest
-	8,  // 11: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
-	10, // 12: auth.v1.AuthService.ChangePassword:input_type -> auth.v1.ChangePasswordRequest
-	14, // 13: auth.v1.AuthService.GetCurrentUser:input_type -> auth.v1.GetCurrentUserRequest
-	16, // 14: auth.v1.AuthService.ListUsers:input_type -> auth.v1.ListUsersRequest
-	18, // 15: auth.v1.AuthService.CreateUser:input_type -> auth.v1.CreateUserRequest
-	20, // 16: auth.v1.AuthService.UpdateUserRole:input_type -> auth.v1.UpdateUserRoleRequest
-	22, // 17: auth.v1.AuthService.BlockUser:input_type -> auth.v1.BlockUserRequest
-	24, // 18: auth.v1.AuthService.SetUserPassword:input_type -> auth.v1.SetUserPasswordRequest
-	26, // 19: auth.v1.AuthService.ListSessions:input_type -> auth.v1.ListSessionsRequest
-	28, // 20: auth.v1.AuthService.RevokeSession:input_type -> auth.v1.RevokeSessionRequest
-	30, // 21: auth.v1.AuthService.AdminListSessions:input_type -> auth.v1.AdminListSessionsRequest
-	31, // 22: auth.v1.AuthService.AdminRevokeSession:input_type -> auth.v1.AdminRevokeSessionRequest
-	1,  // 23: auth.v1.AuthService.Login:output_type -> auth.v1.LoginResponse
-	3,  // 24: auth.v1.AuthService.Logout:output_type -> auth.v1.LogoutResponse
-	5,  // 25: auth.v1.AuthService.LogoutAll:output_type -> auth.v1.LogoutAllResponse
-	7,  // 26: auth.v1.AuthService.RefreshToken:output_type -> auth.v1.RefreshTokenResponse
-	9,  // 27: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
-	11, // 28: auth.v1.AuthService.ChangePassword:output_type -> auth.v1.ChangePasswordResponse
-	15, // 29: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.GetCurrentUserResponse
-	17, // 30: auth.v1.AuthService.ListUsers:output_type -> auth.v1.ListUsersResponse
-	19, // 31: auth.v1.AuthService.CreateUser:output_type -> auth.v1.CreateUserResponse
-	21, // 32: auth.v1.AuthService.UpdateUserRole:output_type -> auth.v1.UpdateUserRoleResponse
-	23, // 33: auth.v1.AuthService.BlockUser:output_type -> auth.v1.BlockUserResponse
-	25, // 34: auth.v1.AuthService.SetUserPassword:output_type -> auth.v1.SetUserPasswordResponse
-	27, // 35: auth.v1.AuthService.ListSessions:output_type -> auth.v1.ListSessionsResponse
-	29, // 36: auth.v1.AuthService.RevokeSession:output_type -> auth.v1.RevokeSessionResponse
-	27, // 37: auth.v1.AuthService.AdminListSessions:output_type -> auth.v1.ListSessionsResponse
-	29, // 38: auth.v1.AuthService.AdminRevokeSession:output_type -> auth.v1.RevokeSessionResponse
-	23, // [23:39] is the sub-list for method output_type
-	7,  // [7:23] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	13, // 7: auth.v1.SessionWithUser.session:type_name -> auth.v1.Session
+	33, // 8: auth.v1.AdminListAllSessionsResponse.sessions:type_name -> auth.v1.SessionWithUser
+	0,  // 9: auth.v1.AuthService.Login:input_type -> auth.v1.LoginRequest
+	2,  // 10: auth.v1.AuthService.Logout:input_type -> auth.v1.LogoutRequest
+	4,  // 11: auth.v1.AuthService.LogoutAll:input_type -> auth.v1.LogoutAllRequest
+	6,  // 12: auth.v1.AuthService.RefreshToken:input_type -> auth.v1.RefreshTokenRequest
+	8,  // 13: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
+	10, // 14: auth.v1.AuthService.ChangePassword:input_type -> auth.v1.ChangePasswordRequest
+	14, // 15: auth.v1.AuthService.GetCurrentUser:input_type -> auth.v1.GetCurrentUserRequest
+	16, // 16: auth.v1.AuthService.ListUsers:input_type -> auth.v1.ListUsersRequest
+	18, // 17: auth.v1.AuthService.CreateUser:input_type -> auth.v1.CreateUserRequest
+	20, // 18: auth.v1.AuthService.UpdateUserRole:input_type -> auth.v1.UpdateUserRoleRequest
+	22, // 19: auth.v1.AuthService.BlockUser:input_type -> auth.v1.BlockUserRequest
+	24, // 20: auth.v1.AuthService.SetUserPassword:input_type -> auth.v1.SetUserPasswordRequest
+	26, // 21: auth.v1.AuthService.ListSessions:input_type -> auth.v1.ListSessionsRequest
+	28, // 22: auth.v1.AuthService.RevokeSession:input_type -> auth.v1.RevokeSessionRequest
+	30, // 23: auth.v1.AuthService.AdminListSessions:input_type -> auth.v1.AdminListSessionsRequest
+	31, // 24: auth.v1.AuthService.AdminRevokeSession:input_type -> auth.v1.AdminRevokeSessionRequest
+	32, // 25: auth.v1.AuthService.AdminListAllSessions:input_type -> auth.v1.AdminListAllSessionsRequest
+	1,  // 26: auth.v1.AuthService.Login:output_type -> auth.v1.LoginResponse
+	3,  // 27: auth.v1.AuthService.Logout:output_type -> auth.v1.LogoutResponse
+	5,  // 28: auth.v1.AuthService.LogoutAll:output_type -> auth.v1.LogoutAllResponse
+	7,  // 29: auth.v1.AuthService.RefreshToken:output_type -> auth.v1.RefreshTokenResponse
+	9,  // 30: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
+	11, // 31: auth.v1.AuthService.ChangePassword:output_type -> auth.v1.ChangePasswordResponse
+	15, // 32: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.GetCurrentUserResponse
+	17, // 33: auth.v1.AuthService.ListUsers:output_type -> auth.v1.ListUsersResponse
+	19, // 34: auth.v1.AuthService.CreateUser:output_type -> auth.v1.CreateUserResponse
+	21, // 35: auth.v1.AuthService.UpdateUserRole:output_type -> auth.v1.UpdateUserRoleResponse
+	23, // 36: auth.v1.AuthService.BlockUser:output_type -> auth.v1.BlockUserResponse
+	25, // 37: auth.v1.AuthService.SetUserPassword:output_type -> auth.v1.SetUserPasswordResponse
+	27, // 38: auth.v1.AuthService.ListSessions:output_type -> auth.v1.ListSessionsResponse
+	29, // 39: auth.v1.AuthService.RevokeSession:output_type -> auth.v1.RevokeSessionResponse
+	27, // 40: auth.v1.AuthService.AdminListSessions:output_type -> auth.v1.ListSessionsResponse
+	29, // 41: auth.v1.AuthService.AdminRevokeSession:output_type -> auth.v1.RevokeSessionResponse
+	34, // 42: auth.v1.AuthService.AdminListAllSessions:output_type -> auth.v1.AdminListAllSessionsResponse
+	26, // [26:43] is the sub-list for method output_type
+	9,  // [9:26] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_auth_service_proto_init() }
@@ -1965,7 +2139,7 @@ func file_auth_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_service_proto_rawDesc), len(file_auth_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   32,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

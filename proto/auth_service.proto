@@ -89,6 +89,10 @@ service AuthService {
   //         NOT_FOUND (пользователь/сессия не найдены или сессия не принадлежит user_uuid),
   //         INVALID_ARGUMENT (невалидный user_uuid/session_id).
   rpc AdminRevokeSession(AdminRevokeSessionRequest) returns (RevokeSessionResponse);
+
+  // Глобальный список всех активных сессий всех пользователей с атрибуцией (uuid/email/role). Admin only.
+  // Errors: UNAUTHENTICATED (невалидный токен), PERMISSION_DENIED (роль не admin).
+  rpc AdminListAllSessions(AdminListAllSessionsRequest) returns (AdminListAllSessionsResponse);
 }
 
 // --- Login ---
@@ -286,4 +290,21 @@ message AdminRevokeSessionRequest {
   string access_token = 1;  // токен админа-инициатора
   string user_uuid    = 2;  // целевой пользователь
   string session_id   = 3;  // family_id сессии целевого пользователя
+}
+
+// --- AdminListAllSessions ---
+
+message AdminListAllSessionsRequest {
+  string access_token = 1;  // токен админа-инициатора
+}
+
+message SessionWithUser {
+  Session session   = 1;    // переиспользуем существующее сообщение Session (НЕ менять)
+  string  user_uuid = 2;    // привязка: кому принадлежит сессия
+  string  email     = 3;
+  string  role      = 4;
+}
+
+message AdminListAllSessionsResponse {
+  repeated SessionWithUser sessions = 1;
 }
