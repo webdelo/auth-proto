@@ -19,20 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_Login_FullMethodName           = "/auth.v1.AuthService/Login"
-	AuthService_Logout_FullMethodName          = "/auth.v1.AuthService/Logout"
-	AuthService_LogoutAll_FullMethodName       = "/auth.v1.AuthService/LogoutAll"
-	AuthService_RefreshToken_FullMethodName    = "/auth.v1.AuthService/RefreshToken"
-	AuthService_ValidateToken_FullMethodName   = "/auth.v1.AuthService/ValidateToken"
-	AuthService_ChangePassword_FullMethodName  = "/auth.v1.AuthService/ChangePassword"
-	AuthService_GetCurrentUser_FullMethodName  = "/auth.v1.AuthService/GetCurrentUser"
-	AuthService_ListUsers_FullMethodName       = "/auth.v1.AuthService/ListUsers"
-	AuthService_CreateUser_FullMethodName      = "/auth.v1.AuthService/CreateUser"
-	AuthService_UpdateUserRole_FullMethodName  = "/auth.v1.AuthService/UpdateUserRole"
-	AuthService_BlockUser_FullMethodName       = "/auth.v1.AuthService/BlockUser"
-	AuthService_SetUserPassword_FullMethodName = "/auth.v1.AuthService/SetUserPassword"
-	AuthService_ListSessions_FullMethodName    = "/auth.v1.AuthService/ListSessions"
-	AuthService_RevokeSession_FullMethodName   = "/auth.v1.AuthService/RevokeSession"
+	AuthService_Login_FullMethodName              = "/auth.v1.AuthService/Login"
+	AuthService_Logout_FullMethodName             = "/auth.v1.AuthService/Logout"
+	AuthService_LogoutAll_FullMethodName          = "/auth.v1.AuthService/LogoutAll"
+	AuthService_RefreshToken_FullMethodName       = "/auth.v1.AuthService/RefreshToken"
+	AuthService_ValidateToken_FullMethodName      = "/auth.v1.AuthService/ValidateToken"
+	AuthService_ChangePassword_FullMethodName     = "/auth.v1.AuthService/ChangePassword"
+	AuthService_GetCurrentUser_FullMethodName     = "/auth.v1.AuthService/GetCurrentUser"
+	AuthService_ListUsers_FullMethodName          = "/auth.v1.AuthService/ListUsers"
+	AuthService_CreateUser_FullMethodName         = "/auth.v1.AuthService/CreateUser"
+	AuthService_UpdateUserRole_FullMethodName     = "/auth.v1.AuthService/UpdateUserRole"
+	AuthService_BlockUser_FullMethodName          = "/auth.v1.AuthService/BlockUser"
+	AuthService_SetUserPassword_FullMethodName    = "/auth.v1.AuthService/SetUserPassword"
+	AuthService_ListSessions_FullMethodName       = "/auth.v1.AuthService/ListSessions"
+	AuthService_RevokeSession_FullMethodName      = "/auth.v1.AuthService/RevokeSession"
+	AuthService_AdminListSessions_FullMethodName  = "/auth.v1.AuthService/AdminListSessions"
+	AuthService_AdminRevokeSession_FullMethodName = "/auth.v1.AuthService/AdminRevokeSession"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -100,6 +102,18 @@ type AuthServiceClient interface {
 	// Отзыв конкретной сессии текущего пользователя.
 	// Errors: UNAUTHENTICATED, NOT_FOUND (не принадлежит текущему пользователю)
 	RevokeSession(ctx context.Context, in *RevokeSessionRequest, opts ...grpc.CallOption) (*RevokeSessionResponse, error)
+	// Список активных сессий произвольного пользователя по user_uuid. Admin only.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (user_uuid не найден),
+	//	INVALID_ARGUMENT (невалидный user_uuid).
+	AdminListSessions(ctx context.Context, in *AdminListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error)
+	// Отзыв сессии произвольного пользователя по session_id (family_id цели). Admin only.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (пользователь/сессия не найдены или сессия не принадлежит user_uuid),
+	//	INVALID_ARGUMENT (невалидный user_uuid/session_id).
+	AdminRevokeSession(ctx context.Context, in *AdminRevokeSessionRequest, opts ...grpc.CallOption) (*RevokeSessionResponse, error)
 }
 
 type authServiceClient struct {
@@ -250,6 +264,26 @@ func (c *authServiceClient) RevokeSession(ctx context.Context, in *RevokeSession
 	return out, nil
 }
 
+func (c *authServiceClient) AdminListSessions(ctx context.Context, in *AdminListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSessionsResponse)
+	err := c.cc.Invoke(ctx, AuthService_AdminListSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) AdminRevokeSession(ctx context.Context, in *AdminRevokeSessionRequest, opts ...grpc.CallOption) (*RevokeSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeSessionResponse)
+	err := c.cc.Invoke(ctx, AuthService_AdminRevokeSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -315,6 +349,18 @@ type AuthServiceServer interface {
 	// Отзыв конкретной сессии текущего пользователя.
 	// Errors: UNAUTHENTICATED, NOT_FOUND (не принадлежит текущему пользователю)
 	RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error)
+	// Список активных сессий произвольного пользователя по user_uuid. Admin only.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (user_uuid не найден),
+	//	INVALID_ARGUMENT (невалидный user_uuid).
+	AdminListSessions(context.Context, *AdminListSessionsRequest) (*ListSessionsResponse, error)
+	// Отзыв сессии произвольного пользователя по session_id (family_id цели). Admin only.
+	// Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+	//
+	//	NOT_FOUND (пользователь/сессия не найдены или сессия не принадлежит user_uuid),
+	//	INVALID_ARGUMENT (невалидный user_uuid/session_id).
+	AdminRevokeSession(context.Context, *AdminRevokeSessionRequest) (*RevokeSessionResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -366,6 +412,12 @@ func (UnimplementedAuthServiceServer) ListSessions(context.Context, *ListSession
 }
 func (UnimplementedAuthServiceServer) RevokeSession(context.Context, *RevokeSessionRequest) (*RevokeSessionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RevokeSession not implemented")
+}
+func (UnimplementedAuthServiceServer) AdminListSessions(context.Context, *AdminListSessionsRequest) (*ListSessionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminListSessions not implemented")
+}
+func (UnimplementedAuthServiceServer) AdminRevokeSession(context.Context, *AdminRevokeSessionRequest) (*RevokeSessionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminRevokeSession not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -640,6 +692,42 @@ func _AuthService_RevokeSession_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_AdminListSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AdminListSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_AdminListSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AdminListSessions(ctx, req.(*AdminListSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_AdminRevokeSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminRevokeSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AdminRevokeSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_AdminRevokeSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AdminRevokeSession(ctx, req.(*AdminRevokeSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -702,6 +790,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeSession",
 			Handler:    _AuthService_RevokeSession_Handler,
+		},
+		{
+			MethodName: "AdminListSessions",
+			Handler:    _AuthService_AdminListSessions_Handler,
+		},
+		{
+			MethodName: "AdminRevokeSession",
+			Handler:    _AuthService_AdminRevokeSession_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

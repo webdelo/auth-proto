@@ -77,6 +77,18 @@ service AuthService {
   // Отзыв конкретной сессии текущего пользователя.
   // Errors: UNAUTHENTICATED, NOT_FOUND (не принадлежит текущему пользователю)
   rpc RevokeSession(RevokeSessionRequest) returns (RevokeSessionResponse);
+
+  // Список активных сессий произвольного пользователя по user_uuid. Admin only.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         NOT_FOUND (user_uuid не найден),
+  //         INVALID_ARGUMENT (невалидный user_uuid).
+  rpc AdminListSessions(AdminListSessionsRequest) returns (ListSessionsResponse);
+
+  // Отзыв сессии произвольного пользователя по session_id (family_id цели). Admin only.
+  // Errors: UNAUTHENTICATED, PERMISSION_DENIED,
+  //         NOT_FOUND (пользователь/сессия не найдены или сессия не принадлежит user_uuid),
+  //         INVALID_ARGUMENT (невалидный user_uuid/session_id).
+  rpc AdminRevokeSession(AdminRevokeSessionRequest) returns (RevokeSessionResponse);
 }
 
 // --- Login ---
@@ -260,3 +272,18 @@ message RevokeSessionRequest {
 }
 
 message RevokeSessionResponse {}
+
+// --- AdminListSessions ---
+
+message AdminListSessionsRequest {
+  string access_token = 1;  // токен админа-инициатора
+  string user_uuid    = 2;  // целевой пользователь
+}
+
+// --- AdminRevokeSession ---
+
+message AdminRevokeSessionRequest {
+  string access_token = 1;  // токен админа-инициатора
+  string user_uuid    = 2;  // целевой пользователь
+  string session_id   = 3;  // family_id сессии целевого пользователя
+}

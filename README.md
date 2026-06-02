@@ -18,7 +18,7 @@ This repository hosts the **`auth.v1`** gRPC contract (proto file + generated Go
 ```
 auth-proto
 ├── proto/
-│   └── auth_service.proto       # source contract (package auth.v1, 13 RPCs)
+│   └── auth_service.proto       # source contract (package auth.v1, 15 RPCs)
 ├── go/                          # Go submodule
 │   ├── go.mod                   # module github.com/webdelo/auth-proto/go
 │   ├── go.sum
